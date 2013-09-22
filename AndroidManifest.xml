@@ -16,6 +16,11 @@
         <activity
             android:name="com.example.mydragdropdesign.MainActivity"
             android:label="@string/app_name" >
+
+        </activity>
+        <activity
+            android:name="com.example.mydragdropdesign.LayoutAnimations"
+            android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
