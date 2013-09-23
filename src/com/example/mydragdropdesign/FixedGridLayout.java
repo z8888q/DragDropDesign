@@ -364,8 +364,8 @@ public class FixedGridLayout extends ViewGroup {
 
 		int addPosition = getDragPosition((int) event.getX(),
 				(int) event.getY());
-		if (addPosition < 0 || addPosition > getChildCount()) {
-			addPosition = getChildCount();
+		if (addPosition < 0 || addPosition >= getChildCount()) {
+			addPosition = getChildCount() - 1;
 		}
 		if (!initRect.contains((int) event.getX(), (int) event.getY())
 				&& holdEnough(addPosition)) {
