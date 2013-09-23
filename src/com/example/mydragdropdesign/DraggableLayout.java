@@ -24,7 +24,6 @@ public class DraggableLayout extends RelativeLayout {
 	}
 
 	View draggingView;
-	protected boolean tempFirst;
 
 	@Override
 	public boolean onInterceptTouchEvent(MotionEvent ev) {

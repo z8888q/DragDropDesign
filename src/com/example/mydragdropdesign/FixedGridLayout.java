@@ -17,8 +17,16 @@
 package com.example.mydragdropdesign;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.PixelFormat;
+import android.graphics.Rect;
+import android.util.Log;
+import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.widget.ImageView;
 
 /**
  * A layout that arranges its children in a grid. The size of the cells is set
@@ -108,37 +116,280 @@ public class FixedGridLayout extends ViewGroup {
 			}
 		}
 	}
+
 	// @Override
-	// protected void onLayout(boolean changed, int l, int t, int r, int b) {
-	// int cellWidth = mCellWidth;
-	// int cellHeight = mCellHeight;
-	// int columns = (r - l) / cellWidth;
-	// if (columns < 0) {
-	// columns = 1;
-	// }
-	// int x = 0;
-	// int y = 0;
-	// int i = 0;
-	// int count = getChildCount();
-	// for (int index=0; index<count; index++) {
-	// final View child = getChildAt(index);
+	protected void onLayout0(boolean changed, int l, int t, int r, int b) {
+		int cellWidth = mCellWidth;
+		int cellHeight = mCellHeight;
+		int columns = (r - l) / cellWidth;
+		if (columns < 0) {
+			columns = 1;
+		}
+		int x = 0;
+		int y = 0;
+		int i = 0;
+		int count = getChildCount();
+		for (int index = 0; index < count; index++) {
+			final View child = getChildAt(index);
+
+			int w = child.getMeasuredWidth();
+			int h = child.getMeasuredHeight();
+
+			int left = x + ((cellWidth - w) / 2);
+			int top = y + ((cellHeight - h) / 2);
+
+			child.layout(left, top, left + w, top + h);
+			if (i >= (columns - 1)) {
+				// advance to next row
+				i = 0;
+				x = 0;
+				y += cellHeight;
+			} else {
+				i++;
+				x += cellWidth;
+			}
+		}
+	}
+
+	View dragOverView;
+	View draggingView;
+	Rect initRect = new Rect();
+
+	@Override
+	public boolean onInterceptTouchEvent(MotionEvent ev) {
+		if (draggingView != null) {
+			switch (ev.getAction()) {
+			case MotionEvent.ACTION_DOWN:
+
+				break;
+			case MotionEvent.ACTION_MOVE:
+				return true;
+			case MotionEvent.ACTION_UP:
+				break;
+			case MotionEvent.ACTION_CANCEL:
+				break;
+			default:
+				break;
+			}
+		}
+		return super.onInterceptTouchEvent(ev);
+	}
+
+	@Override
+	public boolean onTouchEvent(MotionEvent event) {
+		if (draggingView != null) {
+			switch (event.getAction()) {
+			case MotionEvent.ACTION_DOWN:
+
+				break;
+			case MotionEvent.ACTION_MOVE:
+				drag(event);
+				break;
+			case MotionEvent.ACTION_UP:
+				dropView(event);
+				break;
+			case MotionEvent.ACTION_CANCEL:
+				dropView(event);
+				break;
+			default:
+				break;
+			}
+		}
+		return super.onTouchEvent(event);
+	}
+
+	// private void drag(int x, int y) {
+	// Log.i("drAg", "drag:" + x + "," + y);
+	// int width = draggingView.getMeasuredWidth();
+	// int height = draggingView.getMeasuredHeight();
 	//
-	// int w = child.getMeasuredWidth();
-	// int h = child.getMeasuredHeight();
+	// int l = x - (1 * width / 2);
+	// int t = y - (1 * height / 2);
 	//
-	// int left = x + ((cellWidth-w)/2);
-	// int top = y + ((cellHeight-h)/2);
+	// draggingView.layout(l, t, l + width, t + height);
 	//
-	// child.layout(left, top, left+w, top+h);
-	// if (i >= (columns-1)) {
-	// // advance to next row
-	// i = 0;
-	// x = 0;
-	// y += cellHeight;
-	// } else {
-	// i++;
-	// x += cellWidth;
+	// // if (!initRect.contains(x, y)) {
+	// // LayoutParams layoutParams = (LayoutParams) draggingView
+	// // .getLayoutParams();
+	// // removeView(draggingView);
+	// // addView(draggingView, layoutParams);
+	// // }
 	// }
-	// }
-	// }
+
+	private void dropView(MotionEvent ev) {
+		Log.i("drop", "drop:" + ev.getX() + "," + ev.getY());
+		// LayoutParams layoutParams = (LayoutParams) draggingView
+		// .getLayoutParams();
+		// // layoutParams.leftMargin = (int) ev.getX();
+		// // layoutParams.topMargin = (int) ev.getY();
+		// draggingView.setLayoutParams(layoutParams);
+
+		draggingView.setVisibility(View.VISIBLE);
+		// TODO 动画
+		mWindowManager.removeView(dragOverView);
+
+		draggingView = null;
+	}
+
+	public void setChildrenLongClickEvent() {
+		for (int i = 0; i < getChildCount(); i++) {
+			getChildAt(i).setOnLongClickListener(getChildLongClickListener());
+		}
+
+	}
+
+	protected OnLongClickListener getChildLongClickListener() {
+		return new OnLongClickListener() {
+
+			@Override
+			public boolean onLongClick(View v) {
+				// if (!tempFirst) {
+				// tempFirst = true;
+				// LayoutParams layoutParams = (LayoutParams) v
+				// .getLayoutParams();
+				// removeView(v);
+				// // v.setVisibility(View.GONE);
+				// addView(v, layoutParams);
+				// setChildrenLongClickEvent();
+				// return onLongClick(v);
+				// } else {
+				// draggingView = v;
+				// return false;
+				// }
+				// // return false;
+
+				// LayoutParams layoutParams = (LayoutParams)
+				// v.getLayoutParams();
+				// removeView(v);
+				// addView(v, layoutParams);
+
+				// v.bringToFront();
+				// bringChildToFront(v);
+				// // v.requestLayout();
+				// invalidate();
+
+				// draggingView = v;
+				// initRect = new Rect(v.getLeft(), v.getTop(), v.getRight(),
+				// v.getBottom());
+
+				startDragging(v);
+				return false;
+			}
+		};
+	}
+
+	@Override
+	protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+		// TODO Auto-generated method stub
+		super.onSizeChanged(w, h, oldw, oldh);
+	}
+
+	WindowManager.LayoutParams mWindowParams;
+	WindowManager mWindowManager;
+
+	private void startDragging(View view) {
+
+		view.setDrawingCacheEnabled(true);
+		draggingView = view;
+		initRect = new Rect(draggingView.getLeft(), draggingView.getTop(),
+				draggingView.getRight(), draggingView.getBottom());
+		lastPosition = getDragPosition(view.getLeft() + view.getMeasuredWidth()
+				/ 2, view.getTop() + view.getMeasuredHeight() / 2);
+
+		Bitmap bitmap = Bitmap.createBitmap(view.getDrawingCache());
+
+		mWindowParams = new WindowManager.LayoutParams();
+		mWindowParams.gravity = Gravity.LEFT | Gravity.TOP;
+		int[] location = new int[2];
+		view.getLocationOnScreen(location);
+		mWindowParams.x = location[0];
+		mWindowParams.y = location[1];
+
+		mWindowParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
+		mWindowParams.width = WindowManager.LayoutParams.WRAP_CONTENT;
+		mWindowParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+				| WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+				| WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+				| WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
+				| WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS;
+
+		mWindowParams.format = PixelFormat.TRANSLUCENT;
+		mWindowParams.windowAnimations = 0;
+
+		Context context = getContext();
+		ImageView v = new ImageView(context);
+		v.setPadding(0, 0, 0, 0);
+		v.setImageBitmap(bitmap);
+
+		mWindowManager = (WindowManager) context
+				.getSystemService(Context.WINDOW_SERVICE);
+		mWindowManager.addView(v, mWindowParams);
+		Log.i("start drag mWindowParams", mWindowParams.x + ","
+				+ mWindowParams.y);
+		dragOverView = v;
+		draggingView.setVisibility(View.GONE);
+
+	}
+
+	int lastPosition;
+
+	private void drag(MotionEvent event) {
+		int x = (int) event.getRawX();
+		int y = (int) event.getRawY();
+
+		if (dragOverView.getVisibility() != View.VISIBLE)
+			dragOverView.setVisibility(View.VISIBLE);
+
+		int width = dragOverView.getMeasuredWidth();
+		int height = dragOverView.getMeasuredHeight();
+
+		int l = x - (1 * width / 2);
+		int t = y - (1 * height / 2);
+
+		mWindowParams.x = l;
+		mWindowParams.y = t;
+		mWindowManager.updateViewLayout(dragOverView, mWindowParams);
+
+		if (!initRect.contains((int) event.getX(), (int) event.getY())) {
+			LayoutParams layoutParams = (LayoutParams) draggingView
+					.getLayoutParams();
+			removeView(draggingView);
+
+			int addPosition = getDragPosition((int) event.getX(),
+					(int) event.getY());
+			if (addPosition < 0 || addPosition > getChildCount()) {
+				addPosition = getChildCount();
+			}
+			Log.i("addPosition", addPosition + "");
+			lastPosition = addPosition;
+			addView(draggingView, addPosition, layoutParams);
+			initRect = updateInitRect(addPosition);
+		}
+
+		// Log.i("drag mWindowManager", mWindowManager.)
+	}
+
+	private Rect updateInitRect(int addPosition) {
+		int xP = addPosition % 4;
+		int yP = addPosition / 4;
+		return new Rect(xP * mCellWidth, yP * mCellHeight, xP * mCellWidth
+				+ mCellWidth, yP * mCellHeight + mCellHeight);
+
+	}
+
+	private int getDragPosition(int x, int y) {
+		int xP = x / mCellWidth;
+		int yP = y / mCellHeight;
+		Log.i("addPosition_xy", x + "," + y);
+		Log.i("addPosition0", xP + "," + yP);
+		if (x % mCellWidth == 0 && xP > 0) {
+			xP = xP - 1;
+		}
+		if (y % mCellHeight == 0 && yP > 0) {
+			yP = yP - 1;
+		}
+		Log.i("addPosition", xP + "," + yP);
+		return yP * 4 + xP;
+	}
+
 }

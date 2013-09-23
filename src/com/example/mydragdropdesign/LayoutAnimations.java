@@ -38,7 +38,7 @@ import android.widget.TextView;
 public class LayoutAnimations extends Activity {
 
 	private int numButtons = 1;
-	ViewGroup container = null;
+	FixedGridLayout container = null;
 	private int screenWidth;
 
 	/** Called when the activity is first created. */
@@ -50,8 +50,8 @@ public class LayoutAnimations extends Activity {
 		container = new FixedGridLayout(this);
 		container.setClipChildren(false);
 		screenWidth = getResources().getDisplayMetrics().widthPixels;
-		((FixedGridLayout) container).setCellHeight(screenWidth / 4);
-		((FixedGridLayout) container).setCellWidth(screenWidth / 4);
+		container.setCellHeight(screenWidth / 4);
+		container.setCellWidth(screenWidth / 4);
 
 		setupContainerTransaction();
 
@@ -73,6 +73,8 @@ public class LayoutAnimations extends Activity {
 						container.removeView(v);
 					}
 				});
+				childLayout.setOnLongClickListener(container
+						.getChildLongClickListener());
 
 				LinearLayout childLayout1 = new LinearLayout(
 						LayoutAnimations.this);
@@ -87,6 +89,7 @@ public class LayoutAnimations extends Activity {
 				childLayout.addView(childLayout1, layoutParams);
 				TextView newButton = new TextView(LayoutAnimations.this);
 				newButton.setTextColor(Color.parseColor("#0a6873"));
+				newButton.setTextSize(24);
 				newButton.setText(String.valueOf(numButtons++));
 				childLayout1.addView(newButton);
 				container.addView(childLayout,
