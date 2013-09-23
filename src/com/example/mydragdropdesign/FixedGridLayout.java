@@ -26,6 +26,10 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
+import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
 
 /**
@@ -224,11 +228,50 @@ public class FixedGridLayout extends ViewGroup {
 		// // layoutParams.topMargin = (int) ev.getY();
 		// draggingView.setLayoutParams(layoutParams);
 
-		draggingView.setVisibility(View.VISIBLE);
-		// TODO 动画
-		mWindowManager.removeView(dragOverView);
+		// draggingView.setVisibility(View.VISIBLE);
+		// // TODO 动画
+		// mWindowManager.removeView(dragOverView);
 
-		draggingView = null;
+		int[] location = new int[2];
+		draggingView.getLocationOnScreen(location);
+		float toX = location[0];
+		float toY = location[1];
+		float fromX = mWindowParams.x;
+		float fromY = mWindowParams.y;
+
+		Log.i("TranslateAnimation", (toX - fromX) + "," + (toY - fromY));
+
+		Animation translate = new TranslateAnimation(0, toX - fromX, 0, toY
+				- fromY);
+		translate.setInterpolator(new AccelerateDecelerateInterpolator());
+		translate.setDuration(300);
+		translate.setFillAfter(true);
+
+		translate.setAnimationListener(new AnimationListener() {
+
+			@Override
+			public void onAnimationStart(Animation animation) {
+
+			}
+
+			@Override
+			public void onAnimationRepeat(Animation animation) {
+
+			}
+
+			@Override
+			public void onAnimationEnd(Animation animation) {
+
+				draggingView.setVisibility(View.VISIBLE);
+				// TODO 动画
+				mWindowManager.removeView(dragOverView);
+
+				draggingView = null;
+			}
+		});
+
+		dragOverView.startAnimation(translate);
+
 	}
 
 	public void setChildrenLongClickEvent() {
@@ -243,35 +286,6 @@ public class FixedGridLayout extends ViewGroup {
 
 			@Override
 			public boolean onLongClick(View v) {
-				// if (!tempFirst) {
-				// tempFirst = true;
-				// LayoutParams layoutParams = (LayoutParams) v
-				// .getLayoutParams();
-				// removeView(v);
-				// // v.setVisibility(View.GONE);
-				// addView(v, layoutParams);
-				// setChildrenLongClickEvent();
-				// return onLongClick(v);
-				// } else {
-				// draggingView = v;
-				// return false;
-				// }
-				// // return false;
-
-				// LayoutParams layoutParams = (LayoutParams)
-				// v.getLayoutParams();
-				// removeView(v);
-				// addView(v, layoutParams);
-
-				// v.bringToFront();
-				// bringChildToFront(v);
-				// // v.requestLayout();
-				// invalidate();
-
-				// draggingView = v;
-				// initRect = new Rect(v.getLeft(), v.getTop(), v.getRight(),
-				// v.getBottom());
-
 				startDragging(v);
 				return false;
 			}
@@ -324,8 +338,6 @@ public class FixedGridLayout extends ViewGroup {
 		mWindowManager = (WindowManager) context
 				.getSystemService(Context.WINDOW_SERVICE);
 		mWindowManager.addView(v, mWindowParams);
-		Log.i("start drag mWindowParams", mWindowParams.x + ","
-				+ mWindowParams.y);
 		dragOverView = v;
 		draggingView.setVisibility(View.GONE);
 
@@ -350,23 +362,42 @@ public class FixedGridLayout extends ViewGroup {
 		mWindowParams.y = t;
 		mWindowManager.updateViewLayout(dragOverView, mWindowParams);
 
-		if (!initRect.contains((int) event.getX(), (int) event.getY())) {
+		int addPosition = getDragPosition((int) event.getX(),
+				(int) event.getY());
+		if (addPosition < 0 || addPosition > getChildCount()) {
+			addPosition = getChildCount();
+		}
+		if (!initRect.contains((int) event.getX(), (int) event.getY())
+				&& holdEnough(addPosition)) {
 			LayoutParams layoutParams = (LayoutParams) draggingView
 					.getLayoutParams();
 			removeView(draggingView);
 
-			int addPosition = getDragPosition((int) event.getX(),
-					(int) event.getY());
-			if (addPosition < 0 || addPosition > getChildCount()) {
-				addPosition = getChildCount();
-			}
-			Log.i("addPosition", addPosition + "");
 			lastPosition = addPosition;
 			addView(draggingView, addPosition, layoutParams);
 			initRect = updateInitRect(addPosition);
 		}
 
 		// Log.i("drag mWindowManager", mWindowManager.)
+	}
+
+	int holdPositioin;
+	long holdStartTime;
+	final int DEFAULT_HOLD_TIME = 300;
+
+	private boolean holdEnough(int addPosition) {
+		if (holdPositioin == addPosition
+				&& holdStartTime != 0
+				&& (System.currentTimeMillis() - holdStartTime) > DEFAULT_HOLD_TIME) {
+			return true;
+		}
+
+		if (holdPositioin != addPosition) {
+			holdPositioin = addPosition;
+			holdStartTime = System.currentTimeMillis();
+		}
+
+		return false;
 	}
 
 	private Rect updateInitRect(int addPosition) {
@@ -380,15 +411,12 @@ public class FixedGridLayout extends ViewGroup {
 	private int getDragPosition(int x, int y) {
 		int xP = x / mCellWidth;
 		int yP = y / mCellHeight;
-		Log.i("addPosition_xy", x + "," + y);
-		Log.i("addPosition0", xP + "," + yP);
 		if (x % mCellWidth == 0 && xP > 0) {
 			xP = xP - 1;
 		}
 		if (y % mCellHeight == 0 && yP > 0) {
 			yP = yP - 1;
 		}
-		Log.i("addPosition", xP + "," + yP);
 		return yP * 4 + xP;
 	}
 

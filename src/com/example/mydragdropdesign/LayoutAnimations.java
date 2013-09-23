@@ -103,6 +103,8 @@ public class LayoutAnimations extends Activity {
 	private void setupContainerTransaction() {
 		if (Build.VERSION.SDK_INT >= 11) {
 			LayoutTransition lt = new LayoutTransition();
+			lt.setAnimator(LayoutTransition.APPEARING, null);
+			lt.setAnimator(LayoutTransition.DISAPPEARING, null);
 			if (Build.VERSION.SDK_INT >= 16) {
 				lt.disableTransitionType(LayoutTransition.APPEARING);
 				lt.enableTransitionType(LayoutTransition.CHANGING);
@@ -112,5 +114,4 @@ public class LayoutAnimations extends Activity {
 		}
 
 	}
-
 }
